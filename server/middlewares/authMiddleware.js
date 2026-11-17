@@ -1,34 +1,29 @@
 const jwt = require('jsonwebtoken');
 
-const authMiddleware = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ status: 'fail', message: 'Akses ditolak, silakan login terlebih dahulu' });
+  if (!token) {
+    return res.status(401).json({ status: 'fail', message: 'Akses ditolak, token tidak ditemukan' });
   }
-
-  const token = authHeader.split(' ')[1];
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
   } catch (error) {
-    res.status(401).json({ status: 'fail', message: 'Token tidak valid atau sudah kedaluwarsa' });
+    return res.status(403).json({ status: 'fail', message: 'Token tidak valid atau kedaluwarsa' });
   }
 };
 
-// Middleware pembatas hak akses berdasarkan role
-authMiddleware.cekRole = (...rolesDiizinkan) => {
+const cekRole = (roles = []) => {
   return (req, res, next) => {
-    if (!req.user || !rolesDiizinkan.includes(req.user.role)) {
-      return res.status(403).json({
-        status: 'fail',
-        message: 'Akses ditolak: Role Anda tidak memiliki izin untuk melakukan tindakan ini.'
-      });
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ status: 'fail', message: 'Anda tidak memiliki hak akses untuk fitur ini' });
     }
     next();
   };
 };
 
-module.exports = authMiddleware;
+module.exports = { verifyToken, cekRole, authorizeRole: cekRole };

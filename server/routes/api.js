@@ -53,4 +53,6 @@ router.post('/peminjaman', verifyToken, cekRole(['ketua', 'sekretaris']), invent
 router.put('/peminjaman/:id/kembali', verifyToken, cekRole(['ketua', 'sekretaris']), inventarisController.kembalikanPeminjaman);
 router.delete('/peminjaman/:id', verifyToken, cekRole(['ketua', 'sekretaris']), inventarisController.deletePeminjaman);
 
+router.put('/users/:id', verifyToken, cekRole(['ketua']), authController.updateUser);
+
 module.exports = router;
