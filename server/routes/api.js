@@ -37,6 +37,7 @@ router.put('/pengurus/:id', verifyToken, cekRole(['ketua']), upload.single('foto
 router.delete('/pengurus/:id', verifyToken, cekRole(['ketua']), pengurusController.deletePengurus);
 
 // --- ANGGOTA PEMUDA ---
+router.get('/anggota/statistik', anggotaController.getStatistikAnggota);
 router.get('/anggota', anggotaController.getAllAnggota);
 router.post('/anggota', verifyToken, cekRole(['ketua', 'sekretaris']), anggotaController.createAnggota);
 router.put('/anggota/:id', verifyToken, cekRole(['ketua', 'sekretaris']), anggotaController.updateAnggota);
