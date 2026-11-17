@@ -11,10 +11,15 @@ const pengurusController = require('../controllers/pengurusController');
 const anggotaController = require('../controllers/anggotaController');
 const inventarisController = require('../controllers/inventarisController');
 
-// --- AUTH ---
+// --- AUTH & MANAJEMEN AKUN PENGURUS ---
 router.post('/auth/login', authController.login);
 router.post('/auth/register', authController.register);
+router.get('/auth/users', verifyToken, cekRole(['ketua']), authController.getAllUsers);
+router.put('/auth/users/:id', verifyToken, cekRole(['ketua']), authController.updateUser);
+router.delete('/auth/users/:id', verifyToken, cekRole(['ketua']), authController.deleteUser);
+// Alias kompatibilitas
 router.get('/users', verifyToken, cekRole(['ketua']), authController.getAllUsers);
+router.put('/users/:id', verifyToken, cekRole(['ketua']), authController.updateUser);
 router.delete('/users/:id', verifyToken, cekRole(['ketua']), authController.deleteUser);
 
 // --- KEGIATAN & ALBUM GALERI ---
@@ -49,11 +54,17 @@ router.post('/inventaris', verifyToken, cekRole(['ketua', 'sekretaris']), invent
 router.put('/inventaris/:id', verifyToken, cekRole(['ketua', 'sekretaris']), inventarisController.updateInventaris);
 router.delete('/inventaris/:id', verifyToken, cekRole(['ketua', 'sekretaris']), inventarisController.deleteInventaris);
 
+// Rute Peminjaman (menggunakan prefix /inventaris/... maupun /peminjaman)
+router.get('/inventaris/peminjaman', inventarisController.getAllPeminjaman);
+router.post('/inventaris/pinjam', verifyToken, cekRole(['ketua', 'sekretaris']), inventarisController.createPeminjaman);
+router.post('/inventaris/peminjaman', verifyToken, cekRole(['ketua', 'sekretaris']), inventarisController.createPeminjaman);
+router.put('/inventaris/kembali/:id', verifyToken, cekRole(['ketua', 'sekretaris']), inventarisController.kembalikanPeminjaman);
+router.put('/inventaris/peminjaman/:id/kembali', verifyToken, cekRole(['ketua', 'sekretaris']), inventarisController.kembalikanPeminjaman);
+router.delete('/inventaris/peminjaman/:id', verifyToken, cekRole(['ketua', 'sekretaris']), inventarisController.deletePeminjaman);
+
 router.get('/peminjaman', inventarisController.getAllPeminjaman);
 router.post('/peminjaman', verifyToken, cekRole(['ketua', 'sekretaris']), inventarisController.createPeminjaman);
 router.put('/peminjaman/:id/kembali', verifyToken, cekRole(['ketua', 'sekretaris']), inventarisController.kembalikanPeminjaman);
 router.delete('/peminjaman/:id', verifyToken, cekRole(['ketua', 'sekretaris']), inventarisController.deletePeminjaman);
-
-router.put('/users/:id', verifyToken, cekRole(['ketua']), authController.updateUser);
 
 module.exports = router;
