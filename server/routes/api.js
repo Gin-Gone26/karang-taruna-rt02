@@ -24,8 +24,8 @@ router.delete('/users/:id', verifyToken, cekRole(['ketua']), authController.dele
 
 // --- KEGIATAN & ALBUM GALERI ---
 router.get('/kegiatan', kegiatanController.getAllKegiatan);
-router.post('/kegiatan', verifyToken, cekRole(['ketua', 'sekretaris']), upload.array('foto', 10), kegiatanController.createKegiatan);
-router.put('/kegiatan/:id', verifyToken, cekRole(['ketua', 'sekretaris']), upload.array('foto', 10), kegiatanController.updateKegiatan);
+router.post('/kegiatan', verifyToken, cekRole(['ketua', 'sekretaris']), upload.array('fotos', 10), kegiatanController.createKegiatan);
+router.put('/kegiatan/:id', verifyToken, cekRole(['ketua', 'sekretaris']), upload.array('fotos', 10), kegiatanController.updateKegiatan);
 router.delete('/kegiatan/foto/:fotoId', verifyToken, cekRole(['ketua', 'sekretaris']), kegiatanController.deleteFotoGaleri);
 router.delete('/kegiatan/:id', verifyToken, cekRole(['ketua', 'sekretaris']), kegiatanController.deleteKegiatan);
 
