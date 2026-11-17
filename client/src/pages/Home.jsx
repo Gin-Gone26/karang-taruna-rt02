@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import api from '../services/api';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import api from "../services/api";
 import {
   Calendar,
   Megaphone,
@@ -12,18 +12,29 @@ import {
   Target,
   Award,
   HeartHandshake,
-  X
-} from 'lucide-react';
+  X,
+} from "lucide-react";
+
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+const getImageUrl = (url) => {
+  if (!url) return "";
+  return url.startsWith("http") ? url : `${BASE_URL}${url}`;
+};
 
 export default function Home() {
   const [kegiatan, setKegiatan] = useState([]);
   const [pengurus, setPengurus] = useState([]);
   const [inventaris, setInventaris] = useState([]);
-  const [statistik, setStatistik] = useState({ total_aktif: 0, laki_laki: 0, perempuan: 0 });
-  const [filter, setFilter] = useState('');
+  const [statistik, setStatistik] = useState({
+    total_aktif: 0,
+    laki_laki: 0,
+    perempuan: 0,
+  });
+  const [filter, setFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedKegiatan, setSelectedKegiatan] = useState(null);
-  const [activeFoto, setActiveFoto] = useState('');
+  const [activeFoto, setActiveFoto] = useState("");
   const [infoTerbaru, setInfoTerbaru] = useState(null);
 
   useEffect(() => {
@@ -31,25 +42,35 @@ export default function Home() {
   }, [filter]);
 
   useEffect(() => {
-    api.get('/pengurus').then((res) => setPengurus(res.data.data)).catch(console.error);
-    api.get('/inventaris').then((res) => setInventaris(res.data.data)).catch(console.error);
-    api.get('/anggota/statistik').then((res) => {
-      if (res.data.data) setStatistik(res.data.data);
-    }).catch(console.error);
+    api
+      .get("/pengurus")
+      .then((res) => setPengurus(res.data.data))
+      .catch(console.error);
+    api
+      .get("/inventaris")
+      .then((res) => setInventaris(res.data.data))
+      .catch(console.error);
+    api
+      .get("/anggota/statistik")
+      .then((res) => {
+        if (res.data.data) setStatistik(res.data.data);
+      })
+      .catch(console.error);
   }, []);
 
-const fetchKegiatan = async () => {
+  const fetchKegiatan = async () => {
     try {
       setLoading(true);
-      const url = filter ? `/kegiatan?kategori=${filter}` : '/kegiatan';
+      const url = filter ? `/kegiatan?kategori=${filter}` : "/kegiatan";
       const res = await api.get(url);
       const listData = res.data.data;
       setKegiatan(listData);
 
-      // Cek apakah ada pengumuman atau dokumentasi kegiatan baru (hanya saat filter = semua)
       if (!filter && listData.length > 0) {
-        const terbaru = listData[0]; // Item paling baru (pengumuman maupun dokumentasi)
-        const lastSeenId = Number(localStorage.getItem('last_seen_kegiatan_id') || 0);
+        const terbaru = listData[0];
+        const lastSeenId = Number(
+          localStorage.getItem("last_seen_kegiatan_id") || 0,
+        );
 
         if (terbaru.id > lastSeenId) {
           setInfoTerbaru(terbaru);
@@ -62,17 +83,16 @@ const fetchKegiatan = async () => {
     }
   };
 
-  // Fungsi untuk menutup alert & menandai sudah dilihat
   const tutupAlertInfo = () => {
     if (infoTerbaru) {
-      localStorage.setItem('last_seen_kegiatan_id', String(infoTerbaru.id));
+      localStorage.setItem("last_seen_kegiatan_id", String(infoTerbaru.id));
     }
     setInfoTerbaru(null);
   };
 
   const buatLinkWA = (nomor, nama, jabatan) => {
     const pesan = encodeURIComponent(
-      `Halo ${nama} (${jabatan} Karang Taruna RT 02), saya warga RT 02 ingin menanyakan/menyampaikan informasi...`
+      `Halo ${nama} (${jabatan} Karang Taruna RT 02), saya warga RT 02 ingin menanyakan/menyampaikan informasi...`,
     );
     return `https://wa.me/${nomor}?text=${pesan}`;
   };
@@ -80,7 +100,9 @@ const fetchKegiatan = async () => {
   const bukaDetailKegiatan = (item) => {
     setSelectedKegiatan(item);
     const fotoPertama =
-      item.galeri && item.galeri.length > 0 ? item.galeri[0].foto_url : item.foto_url || '';
+      item.galeri && item.galeri.length > 0
+        ? item.galeri[0].foto_url
+        : item.foto_url || "";
     setActiveFoto(fotoPertama);
   };
 
@@ -91,7 +113,7 @@ const fetchKegiatan = async () => {
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
           style={{
-            backgroundImage: `url('/images/hero-bg.jpg')`
+            backgroundImage: `url('/images/hero-bg.jpg')`,
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-900/85 to-emerald-950/75" />
@@ -104,11 +126,16 @@ const fetchKegiatan = async () => {
             </span>
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight mb-5">
-              Bersatu, Berkarya, dan Mengabdi untuk <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-300">Lingkungan RT 02</span>
+              Bersatu, Berkarya, dan Mengabdi untuk{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-300">
+                Lingkungan RT 02
+              </span>
             </h1>
 
             <p className="text-slate-300 text-base md:text-lg leading-relaxed mb-8">
-              Wadah kolaborasi generasi muda RT 02 dalam kegiatan sosial, olahraga, gotong royong, serta pengelolaan informasi dan kas organisasi yang terbuka bagi seluruh warga.
+              Wadah kolaborasi generasi muda RT 02 dalam kegiatan sosial,
+              olahraga, gotong royong, serta pengelolaan informasi dan kas
+              organisasi yang terbuka bagi seluruh warga.
             </p>
 
             <div className="flex flex-wrap gap-3.5">
@@ -122,7 +149,8 @@ const fetchKegiatan = async () => {
                 to="/kas"
                 className="bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-white font-semibold px-6 py-3 rounded-xl flex items-center gap-2 transition"
               >
-                <Wallet className="w-4 h-4 text-amber-400" /> Transparansi Kas RT
+                <Wallet className="w-4 h-4 text-amber-400" /> Transparansi Kas
+                RT
               </Link>
             </div>
           </div>
@@ -133,20 +161,36 @@ const fetchKegiatan = async () => {
       <section className="max-w-6xl mx-auto px-4 -mt-10 relative z-10">
         <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-slate-200/70 dark:shadow-slate-950/80 border border-slate-100 dark:border-slate-800 p-6 grid grid-cols-2 md:grid-cols-4 gap-6 divide-y md:divide-y-0 md:divide-x divide-slate-100 dark:divide-slate-800">
           <div className="text-center pt-2 md:pt-0">
-            <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">{statistik.total_aktif || 0}</div>
-            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Pemuda/i Aktif</div>
+            <div className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
+              {statistik.total_aktif || 0}
+            </div>
+            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">
+              Pemuda/i Aktif
+            </div>
           </div>
           <div className="text-center pt-4 md:pt-0">
-            <div className="text-3xl font-extrabold text-slate-800 dark:text-slate-100">{statistik.laki_laki || 0}</div>
-            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Anggota Putra</div>
+            <div className="text-3xl font-extrabold text-slate-800 dark:text-slate-100">
+              {statistik.laki_laki || 0}
+            </div>
+            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">
+              Anggota Putra
+            </div>
           </div>
           <div className="text-center pt-4 md:pt-0">
-            <div className="text-3xl font-extrabold text-slate-800 dark:text-slate-100">{statistik.perempuan || 0}</div>
-            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Anggota Putri</div>
+            <div className="text-3xl font-extrabold text-slate-800 dark:text-slate-100">
+              {statistik.perempuan || 0}
+            </div>
+            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">
+              Anggota Putri
+            </div>
           </div>
           <div className="text-center pt-4 md:pt-0">
-            <div className="text-3xl font-extrabold text-amber-500 dark:text-amber-400">{kegiatan.length}</div>
-            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Agenda & Dokumentasi</div>
+            <div className="text-3xl font-extrabold text-amber-500 dark:text-amber-400">
+              {kegiatan.length}
+            </div>
+            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">
+              Agenda & Dokumentasi
+            </div>
           </div>
         </div>
       </section>
@@ -163,9 +207,12 @@ const fetchKegiatan = async () => {
               />
             </div>
             <div className="absolute -bottom-5 -right-3 md:-right-5 bg-slate-900 dark:bg-slate-900 text-white p-5 rounded-2xl shadow-xl border border-slate-800 max-w-xs">
-              <p className="text-amber-400 font-bold text-sm uppercase tracking-wider">Semboyan Kami</p>
+              <p className="text-amber-400 font-bold text-sm uppercase tracking-wider">
+                Semboyan Kami
+              </p>
               <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                "Aditya Karya Mahatva Yodha — Pejuang yang berkepribadian, berpengetahuan, dan terampil."
+                "Aditya Karya Mahatva Yodha — Pejuang yang berkepribadian,
+                berpengetahuan, dan terampil."
               </p>
             </div>
           </div>
@@ -178,7 +225,9 @@ const fetchKegiatan = async () => {
               Membangun Solidaritas & Kreativitas Generasi Muda RT 02
             </h2>
             <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed">
-              Karang Taruna Unit RT 02 hadir sebagai motor penggerak kegiatan sosial kemasyarakatan, menjaga kerukunan antarwarga, serta menjadi ruang tumbuh bagi potensi pemuda di lingkungan RT 02.
+              Karang Taruna Unit RT 02 hadir sebagai motor penggerak kegiatan
+              sosial kemasyarakatan, menjaga kerukunan antarwarga, serta menjadi
+              ruang tumbuh bagi potensi pemuda di lingkungan RT 02.
             </p>
 
             <div className="space-y-3.5 pt-2">
@@ -187,8 +236,13 @@ const fetchKegiatan = async () => {
                   <HeartHandshake className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">Sosial & Gotong Royong</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Tanggap terhadap kebersihan lingkungan, keamanan, serta aksi solidaritas warga.</p>
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">
+                    Sosial & Gotong Royong
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Tanggap terhadap kebersihan lingkungan, keamanan, serta aksi
+                    solidaritas warga.
+                  </p>
                 </div>
               </div>
 
@@ -197,8 +251,13 @@ const fetchKegiatan = async () => {
                   <Award className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">Kepemudaan, Seni & Olahraga</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Menyelenggarakan peringatan hari besar nasional, turnamen, dan kegiatan positif pemuda.</p>
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">
+                    Kepemudaan, Seni & Olahraga
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Menyelenggarakan peringatan hari besar nasional, turnamen,
+                    dan kegiatan positif pemuda.
+                  </p>
                 </div>
               </div>
 
@@ -207,8 +266,13 @@ const fetchKegiatan = async () => {
                   <Target className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">Transparansi & Akuntabilitas</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Keterbukaan laporan keuangan kas dan inventaris perlengkapan kepada seluruh warga RT 02.</p>
+                  <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">
+                    Transparansi & Akuntabilitas
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Keterbukaan laporan keuangan kas dan inventaris perlengkapan
+                    kepada seluruh warga RT 02.
+                  </p>
                 </div>
               </div>
             </div>
@@ -217,35 +281,42 @@ const fetchKegiatan = async () => {
       </section>
 
       {/* 4. INFO & DOKUMENTASI KEGIATAN */}
-      <section id="kegiatan" className="bg-slate-100/80 dark:bg-slate-900/50 border-y border-slate-200/80 dark:border-slate-800 py-16">
+      <section
+        id="kegiatan"
+        className="bg-slate-100/80 dark:bg-slate-900/50 border-y border-slate-200/80 dark:border-slate-800 py-16"
+      >
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex flex-wrap justify-between items-end gap-4 mb-8">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Kabar Wilayah</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
+                Kabar Wilayah
+              </span>
               <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
                 Pengumuman & Dokumentasi Kegiatan
               </h2>
             </div>
 
             <div className="flex gap-2 bg-white dark:bg-slate-900 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-              {['', 'pengumuman', 'dokumentasi'].map((kat) => (
+              {["", "pengumuman", "dokumentasi"].map((kat) => (
                 <button
                   key={kat}
                   onClick={() => setFilter(kat)}
                   className={`px-4 py-1.5 rounded-lg text-xs md:text-sm font-semibold capitalize cursor-pointer transition ${
                     filter === kat
-                      ? 'bg-emerald-600 text-white shadow-sm'
-                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      ? "bg-emerald-600 text-white shadow-sm"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                   }`}
                 >
-                  {kat === '' ? 'Semua' : kat}
+                  {kat === "" ? "Semua" : kat}
                 </button>
               ))}
             </div>
           </div>
 
           {loading ? (
-            <p className="text-slate-500 dark:text-slate-400 text-center py-10">Memuat informasi kegiatan...</p>
+            <p className="text-slate-500 dark:text-slate-400 text-center py-10">
+              Memuat informasi kegiatan...
+            </p>
           ) : kegiatan.length === 0 ? (
             <div className="bg-white dark:bg-slate-900 p-10 rounded-2xl border border-slate-200 dark:border-slate-800 text-center text-slate-500 dark:text-slate-400">
               Belum ada pengumuman atau dokumentasi kegiatan pada kategori ini.
@@ -262,29 +333,31 @@ const fetchKegiatan = async () => {
                     <div className="relative h-52 bg-slate-800 overflow-hidden">
                       {item.foto_url ? (
                         <img
-                          src={`${import.meta.env.VITE_API_URL \vert{}\vert{} 'http://localhost:5000'}${item.foto_url}`}
+                          src={getImageUrl(item.foto_url)}
                           alt={item.judul}
                           className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-emerald-800 to-slate-900 flex flex-col items-center justify-center text-emerald-200/70 p-4">
-                          {item.kategori === 'pengumuman' ? (
+                          {item.kategori === "pengumuman" ? (
                             <Megaphone className="w-10 h-10 mb-2 text-amber-400" />
                           ) : (
                             <ImageIcon className="w-10 h-10 mb-2 text-emerald-400" />
                           )}
-                          <span className="text-xs font-medium uppercase tracking-wider">Karang Taruna RT 02</span>
+                          <span className="text-xs font-medium uppercase tracking-wider">
+                            Karang Taruna RT 02
+                          </span>
                         </div>
                       )}
 
                       <span
                         className={`absolute top-3 left-3 text-[11px] font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1 ${
-                          item.kategori === 'pengumuman'
-                            ? 'bg-amber-400 text-slate-950'
-                            : 'bg-emerald-600 text-white'
+                          item.kategori === "pengumuman"
+                            ? "bg-amber-400 text-slate-950"
+                            : "bg-emerald-600 text-white"
                         }`}
                       >
-                        {item.kategori === 'pengumuman' ? (
+                        {item.kategori === "pengumuman" ? (
                           <Megaphone className="w-3 h-3" />
                         ) : (
                           <ImageIcon className="w-3 h-3" />
@@ -294,7 +367,8 @@ const fetchKegiatan = async () => {
 
                       {item.galeri && item.galeri.length > 1 && (
                         <span className="absolute top-3 right-3 bg-slate-950/75 backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
-                          <ImageIcon className="w-3 h-3 text-emerald-400" /> {item.galeri.length} Foto
+                          <ImageIcon className="w-3 h-3 text-emerald-400" />{" "}
+                          {item.galeri.length} Foto
                         </span>
                       )}
                     </div>
@@ -302,16 +376,21 @@ const fetchKegiatan = async () => {
                     <div className="p-5">
                       <div className="text-xs text-slate-400 flex items-center gap-1.5 mb-2">
                         <Calendar className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                        {new Date(item.tanggal_acara).toLocaleDateString('id-ID', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        })}
+                        {new Date(item.tanggal_acara).toLocaleDateString(
+                          "id-ID",
+                          {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          },
+                        )}
                       </div>
                       <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition line-clamp-2 mb-2">
                         {item.judul}
                       </h3>
-                      <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed line-clamp-3">{item.deskripsi}</p>
+                      <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed line-clamp-3">
+                        {item.deskripsi}
+                      </p>
                     </div>
                   </div>
 
@@ -331,13 +410,17 @@ const fetchKegiatan = async () => {
         <section className="max-w-6xl mx-auto px-4 pt-16">
           <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
             <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Fasilitas Warga</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
+                Fasilitas Warga
+              </span>
               <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white mt-1 flex items-center gap-2">
-                <Package className="w-6 h-6 text-emerald-600 dark:text-emerald-400" /> Inventaris Perlengkapan RT 02
+                <Package className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />{" "}
+                Inventaris Perlengkapan RT 02
               </h2>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Cek ketersediaan barang sebelum menghubungi pengurus untuk peminjaman.
+              Cek ketersediaan barang sebelum menghubungi pengurus untuk
+              peminjaman.
             </p>
           </div>
 
@@ -353,26 +436,35 @@ const fetchKegiatan = async () => {
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {inventaris.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition">
+                  <tr
+                    key={inv.id}
+                    className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition"
+                  >
                     <td className="p-4">
-                      <div className="font-bold text-slate-800 dark:text-slate-100">{inv.nama_barang}</div>
+                      <div className="font-bold text-slate-800 dark:text-slate-100">
+                        {inv.nama_barang}
+                      </div>
                       {Number(inv.sedang_dipinjam) > 0 && (
                         <div className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
                           ({inv.sedang_dipinjam} unit sedang dipinjam warga)
                         </div>
                       )}
                     </td>
-                    <td className="p-4 font-semibold text-slate-700 dark:text-slate-200">{inv.jumlah} unit</td>
-                    <td className="p-4 text-slate-600 dark:text-slate-300">{inv.kondisi}</td>
+                    <td className="p-4 font-semibold text-slate-700 dark:text-slate-200">
+                      {inv.jumlah} unit
+                    </td>
+                    <td className="p-4 text-slate-600 dark:text-slate-300">
+                      {inv.kondisi}
+                    </td>
                     <td className="p-4">
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-semibold ${
                           inv.jumlah > 0
-                            ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400'
-                            : 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400'
+                            ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400"
+                            : "bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400"
                         }`}
                       >
-                        {inv.jumlah > 0 ? 'Tersedia' : 'Habis Dipinjam'}
+                        {inv.jumlah > 0 ? "Tersedia" : "Habis Dipinjam"}
                       </span>
                     </td>
                   </tr>
@@ -386,12 +478,15 @@ const fetchKegiatan = async () => {
       {/* 6. STRUKTUR KEPENGURUSAN */}
       <section id="pengurus" className="max-w-6xl mx-auto px-4 pt-16">
         <div className="text-center max-w-2xl mx-auto mb-10">
-          <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">Struktur Organisasi</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
+            Struktur Organisasi
+          </span>
           <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
             Pengurus Inti Karang Taruna RT 02
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-            Hubungi pengurus secara langsung melalui WhatsApp untuk koordinasi kegiatan pemuda, peminjaman inventaris, maupun aspirasi warga.
+            Hubungi pengurus secara langsung melalui WhatsApp untuk koordinasi
+            kegiatan pemuda, peminjaman inventaris, maupun aspirasi warga.
           </p>
         </div>
 
@@ -411,7 +506,7 @@ const fetchKegiatan = async () => {
                 <div className="-mt-12 relative">
                   {p.foto_url ? (
                     <img
-                      src={`${import.meta.env.VITE_API_URL \vert{}\vert{} 'http://localhost:5000'}${p.foto_url}`}
+                      src={getImageUrl(p.foto_url)}
                       alt={p.nama}
                       className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-slate-900 shadow-md"
                     />
@@ -426,7 +521,9 @@ const fetchKegiatan = async () => {
                   <span className="inline-block mx-auto text-[11px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/70 px-3 py-1 rounded-full mb-2">
                     {p.jabatan}
                   </span>
-                  <h3 className="font-bold text-slate-900 dark:text-white text-lg mb-5">{p.nama}</h3>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-lg mb-5">
+                    {p.nama}
+                  </h3>
 
                   <a
                     href={buatLinkWA(p.no_wa, p.nama, p.jabatan)}
@@ -443,109 +540,112 @@ const fetchKegiatan = async () => {
         )}
       </section>
 
-{/* MODAL POPUP DETAIL KEGIATAN & ALBUM GALERI */}
-   {selectedKegiatan && (
-     <div
-       onClick={() => setSelectedKegiatan(null)}
-       className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4"
-     >
-       <div
-         onClick={(e) => e.stopPropagation()}
-         className="bg-white dark:bg-slate-900 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 dark:border-slate-800"
-       >
-         {/* Foto Utama Aktif */}
-         {activeFoto && (
-           <div className="bg-slate-950 flex items-center justify-center">
-             <img
-               src={`${import.meta.env.VITE_API_URL \vert{}\vert{} 'http://localhost:5000'}${activeFoto}`}
-               alt={selectedKegiatan.judul}
-               className="w-full max-h-96 object-contain"
-             />
-           </div>
-         )}
+      {/* MODAL POPUP DETAIL KEGIATAN & ALBUM GALERI */}
+      {selectedKegiatan && (
+        <div
+          onClick={() => setSelectedKegiatan(null)}
+          className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-slate-900 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 dark:border-slate-800"
+          >
+            {/* Foto Utama Aktif */}
+            {activeFoto && (
+              <div className="bg-slate-950 flex items-center justify-center">
+                <img
+                  src={getImageUrl(activeFoto)}
+                  alt={selectedKegiatan.judul}
+                  className="w-full max-h-96 object-contain"
+                />
+              </div>
+            )}
 
-         {/* Grid Thumbnail Galeri (Jika lebih dari 1 foto) */}
-         {selectedKegiatan.galeri && selectedKegiatan.galeri.length > 1 && (
-           <div className="px-6 pt-4">
-             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
-               Album Dokumentasi ({selectedKegiatan.galeri.length} Foto — klik untuk memperbesar)
-             </p>
-             <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-               {selectedKegiatan.galeri.map((f) => (
-                 <button
-                   key={f.id}
-                   type="button"
-                   onClick={() => setActiveFoto(f.foto_url)}
-                   className={`rounded-lg overflow-hidden border-2 h-16 cursor-pointer transition ${
-                     activeFoto === f.foto_url
-                       ? 'border-emerald-500 scale-105 shadow-md'
-                       : 'border-transparent opacity-70 hover:opacity-100'
-                   }`}
-                 >
-                   <img
-                     src={`${import.meta.env.VITE_API_URL \vert{}\vert{} 'http://localhost:5000'}${f.foto_url}`}
-                     alt="Thumbnail"
-                     className="w-full h-full object-cover"
-                   />
-                 </button>
-               ))}
-             </div>
-           </div>
-         )}
+            {/* Grid Thumbnail Galeri (Jika lebih dari 1 foto) */}
+            {selectedKegiatan.galeri && selectedKegiatan.galeri.length > 1 && (
+              <div className="px-6 pt-4">
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
+                  Album Dokumentasi ({selectedKegiatan.galeri.length} Foto —
+                  klik untuk memperbesar)
+                </p>
+                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                  {selectedKegiatan.galeri.map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setActiveFoto(f.foto_url)}
+                      className={`rounded-lg overflow-hidden border-2 h-16 cursor-pointer transition ${
+                        activeFoto === f.foto_url
+                          ? "border-emerald-500 scale-105 shadow-md"
+                          : "border-transparent opacity-70 hover:opacity-100"
+                      }`}
+                    >
+                      <img
+                        src={getImageUrl(f.foto_url)}
+                        alt="Thumbnail"
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
-         <div className="p-6">
-           <div className="flex items-center justify-between gap-2 mb-3">
-             <span className="text-xs font-bold uppercase px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
-               {selectedKegiatan.kategori}
-             </span>
-             <button
-               onClick={() => setSelectedKegiatan(null)}
-               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-             >
-               <X className="w-5 h-5" />
-             </button>
-           </div>
+            <div className="p-6">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <span className="text-xs font-bold uppercase px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                  {selectedKegiatan.kategori}
+                </span>
+                <button
+                  onClick={() => setSelectedKegiatan(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-           <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mb-2">
-             <Calendar className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-             {new Date(selectedKegiatan.tanggal_acara).toLocaleDateString('id-ID', {
-               weekday: 'long',
-               day: 'numeric',
-               month: 'long',
-               year: 'numeric'
-             })}
-           </div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mb-2">
+                <Calendar className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                {new Date(selectedKegiatan.tanggal_acara).toLocaleDateString(
+                  "id-ID",
+                  {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  },
+                )}
+              </div>
 
-           <h3 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white mb-4">
-             {selectedKegiatan.judul}
-           </h3>
-           <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base leading-relaxed whitespace-pre-line">
-             {selectedKegiatan.deskripsi}
-           </p>
-         </div>
-       </div>
-     </div>
-   )}
+              <h3 className="text-xl md:text-2xl font-extrabold text-slate-900 dark:text-white mb-4">
+                {selectedKegiatan.judul}
+              </h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base leading-relaxed whitespace-pre-line">
+                {selectedKegiatan.deskripsi}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
-{/* FLOATING ALERT PENGUMUMAN & KEGIATAN BARU */}
+      {/* FLOATING ALERT PENGUMUMAN & KEGIATAN BARU */}
       {infoTerbaru && (
         <div className="fixed bottom-5 right-5 left-5 sm:left-auto sm:max-w-md z-50">
           <div
             className={`bg-slate-900 dark:bg-slate-900 text-white rounded-2xl shadow-2xl border-2 p-4 flex items-start gap-3.5 ${
-              infoTerbaru.kategori === 'pengumuman'
-                ? 'border-amber-400/80'
-                : 'border-emerald-500/80'
+              infoTerbaru.kategori === "pengumuman"
+                ? "border-amber-400/80"
+                : "border-emerald-500/80"
             }`}
           >
-            {/* Ikon Dinamis sesuai Kategori */}
             <div
               className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 shadow-md ${
-                infoTerbaru.kategori === 'pengumuman'
-                  ? 'bg-amber-400 text-slate-950'
-                  : 'bg-emerald-500 text-white'
+                infoTerbaru.kategori === "pengumuman"
+                  ? "bg-amber-400 text-slate-950"
+                  : "bg-emerald-500 text-white"
               }`}
             >
-              {infoTerbaru.kategori === 'pengumuman' ? (
+              {infoTerbaru.kategori === "pengumuman" ? (
                 <Megaphone className="w-5 h-5" />
               ) : (
                 <ImageIcon className="w-5 h-5" />
@@ -556,14 +656,14 @@ const fetchKegiatan = async () => {
               <div className="flex items-center justify-between gap-2">
                 <span
                   className={`text-[10px] font-extrabold uppercase tracking-widest ${
-                    infoTerbaru.kategori === 'pengumuman'
-                      ? 'text-amber-400'
-                      : 'text-emerald-400'
+                    infoTerbaru.kategori === "pengumuman"
+                      ? "text-amber-400"
+                      : "text-emerald-400"
                   }`}
                 >
-                  {infoTerbaru.kategori === 'pengumuman'
-                    ? 'Pengumuman Baru RT 02'
-                    : 'Dokumentasi Kegiatan Baru'}
+                  {infoTerbaru.kategori === "pengumuman"
+                    ? "Pengumuman Baru RT 02"
+                    : "Dokumentasi Kegiatan Baru"}
                 </span>
                 <button
                   onClick={tutupAlertInfo}
@@ -589,14 +689,14 @@ const fetchKegiatan = async () => {
                     bukaDetailKegiatan(item);
                   }}
                   className={`font-bold text-xs px-3.5 py-1.5 rounded-lg transition cursor-pointer ${
-                    infoTerbaru.kategori === 'pengumuman'
-                      ? 'bg-amber-400 hover:bg-amber-300 text-slate-950'
-                      : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
+                    infoTerbaru.kategori === "pengumuman"
+                      ? "bg-amber-400 hover:bg-amber-300 text-slate-950"
+                      : "bg-emerald-500 hover:bg-emerald-400 text-slate-950"
                   }`}
                 >
-                  {infoTerbaru.kategori === 'pengumuman'
-                    ? 'Baca Selengkapnya'
-                    : 'Lihat Dokumentasi'}
+                  {infoTerbaru.kategori === "pengumuman"
+                    ? "Baca Selengkapnya"
+                    : "Lihat Dokumentasi"}
                 </button>
                 <button
                   onClick={tutupAlertInfo}
