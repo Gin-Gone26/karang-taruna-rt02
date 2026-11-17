@@ -191,3 +191,18 @@ exports.kembalikanBarang = async (req, res) => {
     conn.release();
   }
 };
+
+// 8. Hapus riwayat peminjaman
+exports.deletePeminjaman = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await db.query('DELETE FROM peminjaman_inventaris WHERE id = ?', [id]);
+    res.json({ status: 'success', message: 'Riwayat peminjaman berhasil dihapus' });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+};
+
+// Alias agar sesuai dengan routes/api.js
+exports.createPeminjaman = exports.pinjamBarang;
+exports.kembalikanPeminjaman = exports.kembalikanBarang;
