@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const path = require('path'); // <-- Tambahkan ini
+const path = require('path');
 require('dotenv').config();
 const db = require('./config/db');
 const apiRoutes = require('./routes/api');
@@ -10,9 +10,10 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Izinkan akses publik ke folder uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // <-- Tambahkan ini
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (req, res) => {
   res.json({ 
@@ -23,6 +24,11 @@ app.get('/', (req, res) => {
 
 app.use('/api', apiRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Server berjalan di http://localhost:${PORT}`);
-});
+// Jalankan server lokal hanya jika tidak di lingkungan Vercel
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server berjalan di http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
